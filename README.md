@@ -1,6 +1,8 @@
-[ [ GitHub ] ](https://github.com/peterberweiler/fileserver)
+[ [ GitHub ] ](https://github.com/bgizdov/ngrok-file-server)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[ [ DockerHub ]](https://hub.docker.com/r/peterberweiler/fileserver)
+[ [ DockerHub ]](https://hub.docker.com/r/bgizdov/ngrok-file-server)
+
+Forked from and credits: https://github.com/peterberweiler/fileserver
 
 # 📁 HTTP File Server with Folder Indices (Docker Container)
 
@@ -36,15 +38,34 @@ processes are managed with
 ## Via docker cli
 
 ```bash
-docker run -d \
-  -e BASEPATH=/ `#optional` \
-  -e BASIC_AUTH_ENABLED=false `#optional` \
-  -e BASIC_AUTH_USER=admin `#optional` \
-  -e BASIC_AUTH_PASSWORD=fileserver `#optional` \
-  -v /path/to/files:/public \
-  -p "80:80" \
-  --restart unless-stopped \
-  peterberweiler/fileserver
+docker run \
+  --rm -v $PWD:/public 
+  -e NGROK_AUTH_TOKEN=YOUR_TOKEN \
+  bgizdov/ngrok-file-server
+```
+
+You will see the public address in the log:
+```
+[cont-init.d] 01-ngrok-tunel.sh: executing...
+#############################################
+#                                           #
+#                 INFO                      #
+#        starting ngrok tunnel              #
+#                                           #
+#############################################
+Authtoken saved to configuration file: /root/.config/ngrok/ngrok.yml
+[cont-init.d] 01-ngrok-tunel.sh: exited 0.
+[cont-init.d] nginx-setup.sh: executing...
+[cont-init.d] nginx-setup.sh: exited 0.
+[cont-init.d] done.
+[services.d] starting services
+t=2023-05-21T22:03:35+0000 lvl=info msg="no configuration paths supplied"
+t=2023-05-21T22:03:35+0000 lvl=info msg="using configuration at default config path" path=/root/.config/ngrok/ngrok.yml
+t=2023-05-21T22:03:35+0000 lvl=info msg="open config file" path=/root/.config/ngrok/ngrok.yml err=nil
+t=2023-05-21T22:03:35+0000 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
+t=2023-05-21T22:03:35+0000 lvl=info msg="client session established" obj=tunnels.session obj=csess id=e14d4f8799de
+t=2023-05-21T22:03:35+0000 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2023-05-21T22:03:35+0000 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://localhost:80 url=https://21f7-130-204-139-211.ngrok-free.app
 ```
 
 ## Via docker compose
@@ -53,8 +74,8 @@ docker run -d \
 version: "3"
 services:
   fileserver:
-    image: peterberweiler/fileserver
-    container_name: fileserver
+    image: bgizdov/ngrok-file-server
+    container_name: ngrok-file-server
     environment:
         # all of these are optional
       - BASEPATH=/
@@ -62,6 +83,7 @@ services:
       - BASIC_AUTH_REALM=admin 
       - BASIC_AUTH_USER=admin 
       - BASIC_AUTH_PASSWORD=fileserver 
+      - NGROK_AUTH_TOKEN=YOUR_TOKEN
     volumes:
       - /path/to/files:/public
     ports:
